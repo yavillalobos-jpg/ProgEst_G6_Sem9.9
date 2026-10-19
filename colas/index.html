@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f5ef">
+  <title>Atención al cliente | Cola</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202a25;
+      --muted: #69756e;
+      --line: #dce3dc;
+      --paper: #ffffff;
+      --canvas: #f3f5ef;
+      --green: #245b43;
+      --green-dark: #194832;
+      --green-soft: #e8f1e9;
+      --orange: #b94b2d;
+      --orange-soft: #fff0e9;
+      --shadow: 0 12px 32px rgba(31, 53, 39, .07);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: var(--canvas);
+      background-image: radial-gradient(#dbe3d8 0.7px, transparent 0.7px);
+      background-size: 18px 18px;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .topbar {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px max(24px, calc((100vw - 1160px) / 2));
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--green);
+      color: white;
+      font-size: 19px;
+    }
+
+    .live-label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #58a66c; }
+
+    main { width: min(1160px, calc(100% - 40px)); margin: 42px auto 64px; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 26px; }
+    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 4vw, 42px); font-weight: 500; letter-spacing: 0; }
+    .intro-copy { margin: 10px 0 0; color: var(--muted); font-size: 15px; }
+
+    .stats { display: grid; grid-template-columns: repeat(2, minmax(130px, 170px)); gap: 10px; }
+    .stat { padding: 13px 16px; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; }
+    .stat-label { display: block; color: var(--muted); font-size: 12px; }
+    .stat-value { display: block; margin-top: 4px; font-size: 24px; font-weight: 700; }
+
+    .workspace { display: grid; grid-template-columns: minmax(270px, 330px) minmax(0, 1fr); align-items: start; gap: 22px; }
+    .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 9px; box-shadow: var(--shadow); }
+    .form-panel { padding: 22px; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: 0; }
+    .section-hint { margin: 6px 0 20px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .field { display: grid; gap: 7px; margin-top: 15px; }
+    .field label { font-size: 13px; font-weight: 700; }
+    .field input, .field select, .field textarea, .search input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #cbd5cd;
+      border-radius: 6px;
+      outline: none;
+      background: white;
+      color: var(--ink);
+    }
+    .field textarea { min-height: 96px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus, .search input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(36, 91, 67, .12); }
+    .primary-button {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 20px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--green);
+      color: white;
+      font-weight: 700;
+      transition: background .16s ease, transform .16s ease;
+    }
+    .primary-button:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+    .queue-panel { overflow: hidden; }
+    .queue-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 22px; border-bottom: 1px solid var(--line); }
+    .queue-heading { display: flex; align-items: baseline; gap: 10px; }
+    .queue-count { color: var(--muted); font-size: 13px; }
+    .queue-actions { display: flex; align-items: center; gap: 9px; }
+    .search { width: min(230px, 34vw); }
+    .search input { padding: 9px 11px; font-size: 13px; }
+    .text-button { padding: 9px 11px; border: 1px solid var(--line); border-radius: 6px; background: white; color: var(--ink); font-size: 13px; font-weight: 700; }
+    .text-button:hover { border-color: var(--green); color: var(--green); }
+    .text-button:disabled { cursor: not-allowed; opacity: .45; }
+
+    .queue-list { list-style: none; margin: 0; padding: 0; }
+    .customer-row { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 17px 22px; border-bottom: 1px solid #edf0ec; animation: appear .2s ease both; }
+    .customer-row:last-child { border-bottom: 0; }
+    .position { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: var(--green-soft); color: var(--green); font-size: 13px; font-weight: 700; }
+    .customer-name { overflow-wrap: anywhere; font-size: 14px; font-weight: 700; }
+    .customer-detail { display: flex; flex-wrap: wrap; gap: 7px 11px; margin-top: 5px; color: var(--muted); font-size: 12px; }
+    .category { padding: 3px 8px; border-radius: 20px; background: #f0f3ef; color: #4d5b51; }
+    .delete-button { padding: 8px 10px; border: 1px solid #f0d6ce; border-radius: 6px; background: white; color: var(--orange); font-size: 12px; font-weight: 700; }
+    .delete-button:hover { background: var(--orange-soft); }
+    .empty-state { padding: 48px 22px; text-align: center; }
+    .empty-icon { width: 44px; height: 44px; display: grid; place-items: center; margin: 0 auto 12px; border-radius: 50%; background: var(--green-soft); color: var(--green); font-size: 20px; }
+    .empty-state strong { display: block; font-size: 14px; }
+    .empty-state p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+    @keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 760px) {
+      main { width: min(100% - 28px, 560px); margin-top: 28px; }
+      .topbar { padding-inline: 16px; }
+      .intro { align-items: start; flex-direction: column; }
+      .stats { width: 100%; grid-template-columns: 1fr 1fr; }
+      .workspace { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 460px) {
+      .live-label { font-size: 0; gap: 0; }
+      .live-dot { width: 10px; height: 10px; }
+      .queue-header { align-items: start; flex-direction: column; padding: 17px; }
+      .queue-actions { width: 100%; }
+      .search { width: auto; flex: 1; }
+      .customer-row { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 9px; padding: 15px 14px; }
+      .position { width: 32px; height: 32px; }
+      .delete-button { padding: 7px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">C</span><span>Centro de atención</span></div>
+    <div class="live-label"><span class="live-dot" aria-hidden="true"></span> Cola activa</div>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Gestión de servicio</p>
+        <h1 id="page-title">Atención al cliente</h1>
+        <p class="intro-copy">Organiza a tus clientes y atiéndelos en orden.</p>
+      </div>
+      <div class="stats" aria-label="Resumen de atención">
+        <div class="stat"><span class="stat-label">En espera</span><span class="stat-value" id="waiting-count">0</span></div>
+        <div class="stat"><span class="stat-label">Atendidos hoy</span><span class="stat-value" id="served-count">0</span></div>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <section class="panel form-panel" aria-labelledby="form-title">
+        <h2 id="form-title">Agregar cliente</h2>
+        <p class="section-hint">Registra a la persona para sumarla al final de la cola.</p>
+        <form id="customer-form">
+          <div class="field">
+            <label for="customer-name">Nombre</label>
+            <input id="customer-name" name="name" autocomplete="name" maxlength="80" placeholder="Nombre del cliente" required>
+          </div>
+          <div class="field">
+            <label for="customer-category">Motivo de consulta</label>
+            <select id="customer-category" name="category">
+              <option>Consulta</option>
+              <option>Soporte técnico</option>
+              <option>Reclamo</option>
+              <option>Facturación</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="customer-note">Detalle <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
+            <textarea id="customer-note" name="note" maxlength="240" placeholder="¿En qué podemos ayudarle?"></textarea>
+          </div>
+          <button class="primary-button" type="submit">+ Agregar a la cola</button>
+        </form>
+      </section>
+
+      <section class="panel queue-panel" aria-labelledby="queue-title">
+        <div class="queue-header">
+          <div class="queue-heading"><h2 id="queue-title">Cola de espera</h2><span class="queue-count" id="queue-count">0 clientes</span></div>
+          <div class="queue-actions">
+            <label class="search"><span class="sr-only">Buscar cliente</span><input id="search-input" type="search" placeholder="Buscar cliente..."></label>
+            <button class="text-button" id="serve-button" type="button" disabled>Atender siguiente</button>
+          </div>
+        </div>
+        <ul class="queue-list" id="queue-list" aria-live="polite"></ul>
+        <div class="empty-state" id="empty-state">
+          <span class="empty-icon" aria-hidden="true">✓</span>
+          <strong>La cola está vacía</strong>
+          <p>Los nuevos clientes aparecerán aquí.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "customer-service-queue-v1";
+    const form = document.querySelector("#customer-form");
+    const list = document.querySelector("#queue-list");
+    const emptyState = document.querySelector("#empty-state");
+    const searchInput = document.querySelector("#search-input");
+    const serveButton = document.querySelector("#serve-button");
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved && Array.isArray(saved.customers) && Number.isInteger(saved.served)) return saved;
+      } catch { /* Ignore invalid or unavailable local storage. */ }
+      return { customers: [], served: 0, servedDate: new Date().toLocaleDateString("es") };
+    }
+
+    function saveState() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* The queue remains usable for this visit. */ }
+    }
+
+    function render() {
+      const query = searchInput.value.trim().toLocaleLowerCase("es");
+      const filtered = state.customers.filter((customer) =>
+        `${customer.name} ${customer.category} ${customer.note}`.toLocaleLowerCase("es").includes(query)
+      );
+      list.replaceChildren();
+      filtered.forEach((customer) => {
+        const originalPosition = state.customers.indexOf(customer) + 1;
+        const item = document.createElement("li");
+        item.className = "customer-row";
+
+        const position = document.createElement("span");
+        position.className = "position";
+        position.textContent = String(originalPosition).padStart(2, "0");
+        position.setAttribute("aria-label", `Posición ${originalPosition}`);
+
+        const details = document.createElement("div");
+        const name = document.createElement("div");
+        name.className = "customer-name";
+        name.textContent = customer.name;
+        const metadata = document.createElement("div");
+        metadata.className = "customer-detail";
+        const category = document.createElement("span");
+        category.className = "category";
+        category.textContent = customer.category;
+        metadata.append(category);
+        if (customer.note) {
+          const note = document.createElement("span");
+          note.textContent = customer.note;
+          metadata.append(note);
+        }
+        details.append(name, metadata);
+
+        const remove = document.createElement("button");
+        remove.className = "delete-button";
+        remove.type = "button";
+        remove.textContent = "Eliminar";
+        remove.setAttribute("aria-label", `Eliminar a ${customer.name}`);
+        remove.addEventListener("click", () => {
+          state.customers = state.customers.filter((entry) => entry.id !== customer.id);
+          saveState();
+          render();
+        });
+        item.append(position, details, remove);
+        list.append(item);
+      });
+
+      const hasCustomers = state.customers.length > 0;
+      emptyState.hidden = filtered.length > 0 || (hasCustomers && query.length > 0);
+      if (hasCustomers && filtered.length === 0 && query.length > 0) {
+        emptyState.hidden = false;
+        emptyState.querySelector("strong").textContent = "Sin resultados";
+        emptyState.querySelector("p").textContent = "Prueba con otro nombre o motivo.";
+      } else {
+        emptyState.querySelector("strong").textContent = "La cola está vacía";
+        emptyState.querySelector("p").textContent = "Los nuevos clientes aparecerán aquí.";
+      }
+      document.querySelector("#waiting-count").textContent = String(state.customers.length);
+      document.querySelector("#served-count").textContent = String(state.served);
+      document.querySelector("#queue-count").textContent = `${state.customers.length} ${state.customers.length === 1 ? "cliente" : "clientes"}`;
+      serveButton.disabled = !hasCustomers;
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const name = String(data.get("name")).trim();
+      if (!name) return;
+      state.customers.push({
+        id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
+        name,
+        category: String(data.get("category")),
+        note: String(data.get("note")).trim()
+      });
+      saveState();
+      form.reset();
+      document.querySelector("#customer-name").focus();
+      render();
+    });
+
+    serveButton.addEventListener("click", () => {
+      if (!state.customers.length) return;
+      const today = new Date().toLocaleDateString("es");
+      if (state.servedDate !== today) {
+        state.served = 0;
+        state.servedDate = today;
+      }
+      state.customers.shift();
+      state.served += 1;
+      saveState();
+      render();
+    });
+
+    searchInput.addEventListener("input", render);
+    render();
+  </script>
+</body>
+</html>
